@@ -14,6 +14,7 @@ import com.image.imageview.Constants
 import com.image.imageview.R
 import com.image.imageview.enum.ImageType
 import com.image.imageview.svga.SvgaHelper
+import com.image.imageview.utils.CacheUtils
 import com.image.imageview.utils.FileUtils
 import com.image.imageview.utils.ThreadUtils
 import com.opensource.svgaplayer.SVGACallback
@@ -143,6 +144,15 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
             ThreadUtils.startMission {
                 try{
                     oldThread = Thread.currentThread()
+                    //先到缓存中获取内容,存在则直接使用缓存
+                    val cacheBitmap = CacheUtils.getCacheBitmap(CacheUtils.createCacheKey(imgUrl as String))
+                    if (cacheBitmap != null && !cacheBitmap.isRecycled){
+                        handle.post {
+                            setImageBitmap(cacheBitmap)
+                        }
+                        return@startMission
+                    }
+
                     if (url.startsWith("https://") || url.startsWith("https://")){
                         val path = URL(url)
                         val http: HttpURLConnection = path.openConnection() as HttpURLConnection
@@ -220,6 +230,7 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
             ImageType.PNG,ImageType.JPEG -> {
                 //加载png，jpeg
                 imgBitmap = BitmapFactory.decodeStream(stream)
+                CacheUtils.addBitmap(CacheUtils.createCacheKey(url),imgBitmap)
                 handle.post {
                     setImageBitmap(imgBitmap)
                 }
