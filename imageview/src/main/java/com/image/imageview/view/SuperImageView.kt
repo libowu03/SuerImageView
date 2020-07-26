@@ -2,10 +2,14 @@ package com.image.imageview.view
 
 import android.animation.ValueAnimator
 import android.content.Context
+import android.content.res.Resources
+import android.content.res.Resources.NotFoundException
 import android.graphics.*
 import android.os.Handler
+import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
+import androidx.core.graphics.drawable.toBitmap
 import com.image.imageview.Constants
 import com.image.imageview.R
 import com.image.imageview.enum.ImageType
@@ -14,10 +18,12 @@ import com.image.imageview.utils.FileUtils
 import com.image.imageview.utils.ThreadUtils
 import com.opensource.svgaplayer.SVGACallback
 import com.opensource.svgaplayer.SVGAImageView
+import pl.droidsonroids.gif.GifDrawable
 import java.io.BufferedInputStream
-import java.io.InputStream
+import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
+import java.util.*
 
 
 open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
@@ -122,7 +128,7 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
     /**
      * 请求网络图片
      */
-    fun requestUrlImage(url:String){
+    fun requestUrlImage(imgUrl:Any){
         try{
             oldThread?.interrupt()
         }catch (e:java.lang.Exception){
@@ -130,40 +136,74 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                 Log.e(Constants.TAG_ERROR,e.localizedMessage)
             }
         }
-        setImageResource(loadingImage)
-        //加载普通图片
-        ThreadUtils.startMission {
-            try{
-                oldThread = Thread.currentThread()
-                if (url.startsWith("https://") || url.startsWith("https://")){
-                    val path = URL(url)
-                    val http: HttpURLConnection = path.openConnection() as HttpURLConnection
-                    //设置请求方法
-                    http.requestMethod = "GET"
-                    //设置请求超时时间
-                    http.connectTimeout = 3000
-                    //获取请求返回码
-                    val requestCode = http.responseCode
-                    //判断返回码.返回码为200表示正常
-                    if (requestCode == HttpURLConnection.HTTP_OK){
-                        val stream = http.inputStream
+        if (imgUrl is String){
+            val url = imgUrl as String
+            setGif(loadingImage)
+            //加载普通图片
+            ThreadUtils.startMission {
+                try{
+                    oldThread = Thread.currentThread()
+                    if (url.startsWith("https://") || url.startsWith("https://")){
+                        val path = URL(url)
+                        val http: HttpURLConnection = path.openConnection() as HttpURLConnection
+                        //设置请求方法
+                        http.requestMethod = "GET"
+                        //设置请求超时时间
+                        http.connectTimeout = 4000
+                        //获取请求返回码
+                        val requestCode = http.responseCode
+                        //判断返回码.返回码为200表示正常
+                        if (requestCode == HttpURLConnection.HTTP_OK){
+                            val stream = http.inputStream
+                            val bufferStream = BufferedInputStream(stream)
+                            val type = FileUtils.checkFileType(bufferStream)
+                            dealWithDifferentTypeImage(type,url,bufferStream)
+                        }
+                    }else{
+                        //获取文件类型
+                        val stream = context.resources.assets.open(url)
                         val bufferStream = BufferedInputStream(stream)
                         val type = FileUtils.checkFileType(bufferStream)
+                        //根据不同文件类型进行不同图片的加载
                         dealWithDifferentTypeImage(type,url,bufferStream)
                     }
-                }else{
-                    //获取文件类型
-                    val stream = context.resources.assets.open(url)
-                    val bufferStream = BufferedInputStream(stream)
-                    val type = FileUtils.checkFileType(bufferStream)
-                    //根据不同文件类型进行不同图片的加载
-                    dealWithDifferentTypeImage(type,url,bufferStream)
-                }
-            }catch (e:Exception){
-                if (e.localizedMessage != null){
-                    Log.e(Constants.TAG_ERROR,e.localizedMessage)
+                }catch (e:Exception){
+                    if (e.localizedMessage != null){
+                        Log.e(Constants.TAG_ERROR,e.localizedMessage)
+                    }
                 }
             }
+        }else if (imgUrl is Int){
+            try{
+                val res: Resources = getResources()
+                if (res != null) {
+                    try {
+                        setGif(imgUrl)
+                    } catch (ignored: IOException) {
+                        //ignored
+                    } catch (ignored: NotFoundException) {
+                    }
+                }
+                //Glide.with(context).load(imgUrl).centerCrop().into(this)
+            }catch (e:java.lang.Exception){
+                Log.e(Constants.TAG_ERROR,e.localizedMessage)
+            }
+        }
+    }
+
+    /**
+     * 如果是gif图片，则加载gif，否则以普通形式加载
+     */
+    private fun setGif(imageId:Int){
+        val factory = BitmapFactory.Options()
+        factory.inJustDecodeBounds = true
+        BitmapFactory.decodeResource(resources,imageId,factory)
+        //判断是不是gif，如果是，则使用gif加载器加载
+        if (factory.outMimeType != null && factory.outMimeType == "image/gif"){
+            val gif = GifDrawable(resources, imageId)
+            setImageDrawable(gif)
+        } else {
+            setImageResource(imageId)
         }
     }
 
@@ -182,6 +222,14 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                 imgBitmap = BitmapFactory.decodeStream(stream)
                 handle.post {
                     setImageBitmap(imgBitmap)
+                }
+            }
+            ImageType.GIF -> {
+                val streamByte = stream.readBytes()
+                handle.post {
+                    val gif = GifDrawable(streamByte)
+                    setImageDrawable(gif)
+                    gif.start()
                 }
             }
         }

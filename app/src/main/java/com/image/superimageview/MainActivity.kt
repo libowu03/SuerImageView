@@ -3,6 +3,7 @@ package com.image.superimageview
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import com.bumptech.glide.Glide
 import com.image.imageview.Constants
 import com.image.imageview.utils.CacheUtils
 import com.image.imageview.utils.ThreadUtils
@@ -12,8 +13,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        test.requestUrlImage("wel_code_31.svga")
-        //svg.requestUrlImage("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg")
+        test.requestUrlImage("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1595768596427&di=2f2800f00ad226cad117cb52b628e456&imgtype=0&src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201905%2F02%2F20190502231740_iP2Bk.thumb.400_0.gif")
         test1.requestUrlImage("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg")
         test2.requestUrlImage("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg")
         test3.requestUrlImage("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg")
@@ -34,6 +34,28 @@ class MainActivity : AppCompatActivity() {
         test19.requestUrlImage("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg")
         test20.requestUrlImage("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg")
         test21.requestUrlImage("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg")
+/*        Glide.with(this).load("https://timgsa.baidu.com/timg?image&quality=80&size=b9999_10000&sec=1595768596427&di=2f2800f00ad226cad117cb52b628e456&imgtype=0&src=http%3A%2F%2Fc-ssl.duitang.com%2Fuploads%2Fitem%2F201905%2F02%2F20190502231740_iP2Bk.thumb.400_0.gif").into(test)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test1)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test2)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test3)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test4)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test5)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test6)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test7)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test8)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test9)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test10)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test12)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test13)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test14)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test15)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test16)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test17)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test18)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test19)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test20)
+        Glide.with(this).load("https://ss0.bdstatic.com/70cFuHSh_Q1YnxGkpoWK1HF6hhy/it/u=3080605948,3091584958&fm=26&gp=0.jpg").into(test21)*/
     }
 
     override fun onDestroy() {
