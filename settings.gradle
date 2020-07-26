@@ -1,0 +1,3 @@
+include ':imageview'
+include ':app'
+rootProject.name = "SuperImageView"

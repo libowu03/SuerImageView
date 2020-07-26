@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="SuperImageView">
+        <!--圆角-->
+        <attr name="siCorner" format="dimension"/>
+        <!--左上角圆角-->
+        <attr name="siTopLeftCorner" format="dimension"/>
+        <!--右上角圆角-->
+        <attr name="siTopRightCorner" format="dimension"/>
+        <!--左下角圆角-->
+        <attr name="siBottomLeftCorner" format="dimension"/>
+        <!--右下角圆角-->
+        <attr name="siBottomRightCorner" format="dimension"/>
+        <!--是否支持圆形图片-->
+        <attr name="siEnableCircle" format="boolean"/>
+        <!--默认图片-->
+        <attr name="siLoadingImage" format="reference"/>
+        <!--加载失败图片-->
+        <attr name="siErrorImage" format="reference"/>
+        <!--网络图片地址-->
+        <attr name="siImgHttpUrl" format="string"/>
+    </declare-styleable>
+</resources>
