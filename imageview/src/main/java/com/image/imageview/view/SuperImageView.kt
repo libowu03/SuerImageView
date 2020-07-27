@@ -145,12 +145,15 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                 try{
                     oldThread = Thread.currentThread()
                     //先到缓存中获取内容,存在则直接使用缓存
-                    val cacheBitmap = CacheUtils.getCacheBitmap(CacheUtils.createCacheKey(imgUrl as String))
+                    val cacheKey = CacheUtils.createCacheKey(imgUrl as String)
+                    val cacheBitmap = CacheUtils.getCacheBitmap(cacheKey)
                     if (cacheBitmap != null && !cacheBitmap.isRecycled){
                         handle.post {
                             setImageBitmap(cacheBitmap)
                         }
                         return@startMission
+                    }else if (cacheBitmap != null && cacheBitmap.isRecycled){
+                        CacheUtils.deleteCacheBitmap(cacheKey)
                     }
 
                     if (url.startsWith("https://") || url.startsWith("https://")){
