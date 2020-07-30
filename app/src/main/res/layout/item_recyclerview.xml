@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_marginBottom="10dp"
+    android:layout_height="wrap_content">
+    <com.image.imageview.view.SuperImageView
+        android:layout_width="80dp"
+        android:scaleType="centerCrop"
+        android:layout_height="80dp"
+        android:layout_margin="5dp"
+        app:siCorner="5dp"
+        app:siEnableCircle="true"
+        android:id="@+id/siImg"/>
+</LinearLayout>

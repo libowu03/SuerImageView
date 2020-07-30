@@ -6,10 +6,8 @@ import android.content.res.Resources
 import android.content.res.Resources.NotFoundException
 import android.graphics.*
 import android.os.Handler
-import android.os.Parcelable
 import android.util.AttributeSet
 import android.util.Log
-import androidx.core.graphics.drawable.toBitmap
 import com.image.imageview.Constants
 import com.image.imageview.R
 import com.image.imageview.enum.ImageType
@@ -24,7 +22,6 @@ import java.io.BufferedInputStream
 import java.io.IOException
 import java.net.HttpURLConnection
 import java.net.URL
-import java.util.*
 
 
 open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
@@ -43,6 +40,7 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
     private var animator: ValueAnimator? = null
     private var svgaHelper:SvgaHelper?=null
     private var oldThread:Thread?=null
+    private val path = Path()
     var loops = -1
     var fillMode: SVGAImageView.FillMode = SVGAImageView.FillMode.Forward
     var callback: SVGACallback? = null
@@ -120,7 +118,6 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
         if (enableCircle){
             initCornr(Math.max(width,height)/2.0f,0f,0f,0f,0f)
         }
-        val path = Path()
         path.addRoundRect(RectF(0f,0f, width.toFloat(), height.toFloat()),roundValue.toFloatArray(),Path.Direction.CW)
         canvas!!.clipPath(path)
         super.onDraw(canvas)
@@ -130,6 +127,7 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
      * 请求网络图片
      */
     fun requestUrlImage(imgUrl:Any){
+        Log.e("日志","执行request")
         try{
             oldThread?.interrupt()
         }catch (e:java.lang.Exception){
@@ -150,6 +148,7 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                         handle.post {
                             setImageBitmap(cacheBitmap)
                         }
+                        Log.e("日志","读取缓存")
                         return@startMission
                     }
 
@@ -228,8 +227,13 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                 svgaHelper?.requestSvga(url,stream,handle)
             }
             ImageType.PNG,ImageType.JPEG -> {
+                val options = BitmapFactory.Options()
+                options.inJustDecodeBounds = true
+                Log.e("日志","图片长宽为:+${width},${height}")
+                options.inSampleSize = calculateInSampleSize(options,width,height)
+                options.inJustDecodeBounds = false
                 //加载png，jpeg
-                imgBitmap = BitmapFactory.decodeStream(stream)
+                imgBitmap = BitmapFactory.decodeStream(stream,null,options)
                 CacheUtils.addBitmap(CacheUtils.createCacheKey(url),imgBitmap)
                 handle.post {
                     setImageBitmap(imgBitmap)
@@ -244,6 +248,42 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                 }
             }
         }
+    }
+
+    /**
+     * 计算inSampleSize值
+     *
+     * @param options
+     * 用于获取原图的长宽
+     * @param reqWidth
+     * 要求压缩后的图片宽度
+     * @param reqHeight
+     * 要求压缩后的图片长度
+     * @return
+     * 返回计算后的inSampleSize值
+     */
+    open fun calculateInSampleSize(
+        options: BitmapFactory.Options,
+        reqWidth: Int,
+        reqHeight: Int
+    ): Int {
+        // 原图片的宽高
+        val height = options.outHeight
+        val width = options.outWidth
+        var inSampleSize = 1
+        if (height > reqHeight || width > reqWidth) {
+            val halfHeight = height / 2
+            val halfWidth = width / 2
+
+
+            // 计算inSampleSize值
+            while (halfHeight / inSampleSize >= reqHeight
+                && halfWidth / inSampleSize >= reqWidth
+            ) {
+                inSampleSize *= 2
+            }
+        }
+        return inSampleSize
     }
 
     /**
