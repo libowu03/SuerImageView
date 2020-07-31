@@ -127,7 +127,7 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
      * 请求网络图片
      */
     fun requestUrlImage(imgUrl:Any){
-        Log.e("日志","执行request")
+        //Log.e("日志","执行request")
         try{
             oldThread?.interrupt()
         }catch (e:java.lang.Exception){
@@ -144,7 +144,8 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                     oldThread = Thread.currentThread()
                     //先到缓存中获取内容,存在则直接使用缓存
                     val cacheKey = CacheUtils.createCacheKey(imgUrl as String)
-                    val cacheBitmap = CacheUtils.getCacheBitmap(cacheKey)
+                    var cacheBitmap = CacheUtils.getCacheBitmap(cacheKey)
+                    //var cacheBitmap = CacheUtils.getCacheBitmap(cacheKey,context.cacheDir.absolutePath)
                     if (cacheBitmap != null && !cacheBitmap.isRecycled){
                         handle.post {
                             setImageBitmap(cacheBitmap)
@@ -152,7 +153,26 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                         Log.e("日志","读取缓存")
                         return@startMission
                     }else if (cacheBitmap != null && cacheBitmap.isRecycled){
+                        //Log.e("日志","读取文件缓存")
                         CacheUtils.deleteCacheBitmap(cacheKey)
+                        cacheBitmap = CacheUtils.getCacheFile(cacheKey,context.cacheDir.absolutePath)
+                        if (cacheBitmap != null){
+                            CacheUtils.addBitmap(cacheKey,cacheBitmap)
+                            handle.post {
+                                setImageBitmap(cacheBitmap)
+                            }
+                            return@startMission
+                        }
+                    }else if (cacheBitmap == null){
+                        //Log.e("日志","读取文件缓存")
+                        cacheBitmap = CacheUtils.getCacheFile(cacheKey,context.cacheDir.absolutePath)
+                        if (cacheBitmap != null){
+                            CacheUtils.addBitmap(cacheKey,cacheBitmap)
+                            handle.post {
+                                setImageBitmap(cacheBitmap)
+                            }
+                            return@startMission
+                        }
                     }
 
                     if (url.startsWith("https://") || url.startsWith("https://")){
@@ -183,6 +203,7 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                     if (e.localizedMessage != null){
                         Log.e(Constants.TAG_ERROR,e.localizedMessage)
                     }
+                    Thread.currentThread()
                 }
             }
         }else if (imgUrl is Int){
@@ -230,17 +251,17 @@ open class SuperImageView : androidx.appcompat.widget.AppCompatImageView {
                 svgaHelper?.requestSvga(url,stream,handle)
             }
             ImageType.PNG,ImageType.JPEG -> {
-                val options = BitmapFactory.Options()
-                options.inJustDecodeBounds = true
-                Log.e("日志","图片长宽为:+${width},${height}")
-                options.inSampleSize = calculateInSampleSize(options,width,height)
-                options.inJustDecodeBounds = false
-                //加载png，jpeg
-                imgBitmap = BitmapFactory.decodeStream(stream,null,options)
+                //保存图片到本地缓存
+                stream.mark(0)
+                CacheUtils.createCacheFile(stream,CacheUtils.createCacheKey(url),context.cacheDir.absolutePath)
+                stream.reset()
+
+                imgBitmap = BitmapFactory.decodeStream(stream)
                 CacheUtils.addBitmap(CacheUtils.createCacheKey(url),imgBitmap)
                 handle.post {
                     setImageBitmap(imgBitmap)
                 }
+
             }
             ImageType.GIF -> {
                 val streamByte = stream.readBytes()

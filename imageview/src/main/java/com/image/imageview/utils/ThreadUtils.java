@@ -1,6 +1,8 @@
 package com.image.imageview.utils;
 
+import android.graphics.Bitmap;
 import android.util.Log;
+import android.util.LruCache;
 
 import com.image.imageview.Constants;
 
@@ -25,6 +27,7 @@ public class ThreadUtils {
                 Log.e(Constants.TAG_ERROR,e.getLocalizedMessage());
             }
         }
+
     }
 
     public static void shotdownMission(){

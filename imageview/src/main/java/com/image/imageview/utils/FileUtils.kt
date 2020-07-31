@@ -25,7 +25,7 @@ object FileUtils {
         }
         //此处一定需要重置，否则读取后指针往下移动后下次读取数据时不会从起点开始读取
         stream.reset()
-        Log.e(Constants.TAG_ERROR,"文件类型：${hex.toString()}")
+        //Log.e(Constants.TAG_ERROR,"文件类型：${hex.toString()}")
         return when {
             hex.toString().startsWith("789cec") -> {
                 ImageType.SVGA
