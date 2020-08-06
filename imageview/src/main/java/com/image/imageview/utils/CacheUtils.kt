@@ -1,19 +1,17 @@
 package com.image.imageview.utils
 
-import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.util.Log
 import android.util.LruCache
-import com.image.imageview.Constants
+import com.image.imageview.enum.ImageType
+import com.image.imageview.model.Image
 import java.io.*
-import java.lang.Exception
 import java.security.MessageDigest
 
 /**
  * 缓存帮助类
  */
 object CacheUtils {
-    private var cache:LruCache<String,Bitmap?>?=null
+    private var cache:LruCache<String,Image?>?=null
 
     /**
      * 通过MD5生成缓存的key
@@ -34,22 +32,27 @@ object CacheUtils {
      * @param key 缓存标记
      * @param bitmap 需要放到缓存内的图片
      */
-    fun addBitmap(key:String,bitmap: Bitmap?){
-        if (cache == null){
-            //获取最大内存
-            val maxMemory = Runtime.getRuntime().maxMemory().toInt()
-            //设置用户缓存的最大内存
-            val cacheSize = maxMemory/8
-            cache = object : LruCache<String, Bitmap?>(cacheSize) {
-                override fun sizeOf(key: String, value: Bitmap?): Int {
-                    if (bitmap != null){
-                        return bitmap.byteCount / 1024
+    fun addBitmap(key:String,bitmap: Image?){
+        synchronized(this){
+            if (cache == null) {
+                //获取最大内存
+                val maxMemory = Runtime.getRuntime().maxMemory().toInt()
+                //设置用户缓存的最大内存
+                val cacheSize = maxMemory / 8
+                cache = LruCache<String, Image?>(cacheSize)
+                /*   cache =  object : LruCache<String, Image?>(cacheSize) {
+                    override fun sizeOf(key: String, value: Image?): Int {
+                        if (bitmap?.bitmap != null){
+                            //return bitmap.bitmap.byteCount / 1024
+                            if (bitmap?.bitmap is Bitmap){
+                                return (bitmap!!.bitmap as Bitmap).byteCount/1024
+                            }
+                        }
+                        return super.sizeOf(key, value)
                     }
-                    return super.sizeOf(key, value)
                 }
+            }*/
             }
-        }
-        if (cache?.get(key) == null){
             cache?.put(key,bitmap)
         }
     }
@@ -57,7 +60,7 @@ object CacheUtils {
     /**
      * 获取图片缓存
      */
-    fun getCacheBitmap(key:String):Bitmap?{
+    fun getCacheBitmap(key:String):Image?{
         return cache?.get(key)
     }
 
@@ -83,40 +86,47 @@ object CacheUtils {
      * @param stream 图片流
      * @param key 图片的key
      */
-    fun createCacheFile(bitmap:BufferedInputStream?,key:String,cachePath:String){
+    fun createCacheFile(bitmap:ByteArray?,key:String,cachePath:String){
         synchronized(this){
             if (bitmap == null){
                 return
             }
             try{
                 val path = cachePath+"/si-${key}"
-                //Log.e("日志","地址：${path}")
+                //L.e("地址：${path}")
                 val file = File(path)
                 if (file.exists()){
                     return
+                    //file.delete()
                 }
-                val write = BufferedWriter(FileWriter(file))
-                var readByte = bitmap.read()
-                Log.e("日志","执行前参数：${readByte}")
-                while (readByte != -1){
-                    Log.e("日志","执行读写")
-                    readByte = bitmap.read()
-                    if (readByte != -1){
-                        write.write(readByte)
-                    }
+                val fileOutput = FileOutputStream(path)
+                val dataOutput = DataOutputStream(fileOutput)
+                val input = ByteArrayInputStream(bitmap)
+                val buff = ByteArray(1024)
+                var len = 0
+                while (input.read(buff).also { len = it } != -1) {
+                    dataOutput.write(buff, 0, len)
                 }
-                bitmap.close()
-                write.close()
-               /* when(imageType){
-                    "png" -> bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-                    "jpg","jpeg" -> bitmap.compress(Bitmap.CompressFormat.JPEG, 100, out)
-                    "webp" -> bitmap.compress(Bitmap.CompressFormat.WEBP, 100, out)
-                }*/
+                fileOutput.close()
+                dataOutput.close()
             }catch (e:Exception){
-                if (e.localizedMessage != null){
-                    Log.e(Constants.TAG_ERROR,"写入图片缓存失败"+e.localizedMessage)
-                }else{
-                    Log.e(Constants.TAG_ERROR,"写入图片缓存失败")
+                L.e("写入图片缓存失败"+e.localizedMessage)
+            }
+        }
+    }
+
+    /**
+     * 清除图片缓存数据
+     * @param cachePath 图片缓存地址
+     */
+    fun clearCacheFile(cachePath:String){
+        val file = File(cachePath)
+        val fileList = file.listFiles()
+        fileList?.let {
+            for (i in fileList){
+                //如果存在文件，且名字开头是“si-”开头的文件，就进行删除操作
+                if (i.exists() && i.isFile && i.name.startsWith("si-")){
+                    i.delete()
                 }
             }
         }
@@ -125,25 +135,39 @@ object CacheUtils {
     /**
      * 获取本地图片缓存
      */
-    fun getCacheFile(key:String,cachePath:String):Bitmap?{
+    fun getCacheFile(key:String,cachePath:String):Image?{
         synchronized(this){
             try{
                 val path = cachePath+"/si-${key}"
                 //Log.e("日志","地址：${path}")
                 val file = File(path)
                 if (file.exists()){
+                    val img = Image()
+                    val factory = BitmapFactory.Options()
+                    factory.inJustDecodeBounds = true
                     val input = BufferedInputStream(FileInputStream(file))
-                    val bitmap = BitmapFactory.decodeStream(input)
+                    input.mark(0)
+                    BitmapFactory.decodeStream(input,null,factory)
+                    input.reset()
+                    img.setHeight(factory.outWidth)
+                    img.setWidth(factory.outWidth)
+                    factory.inJustDecodeBounds = false
+                    if (img.type == ImageType.GIF){
+                        img.setBitmap(input.readBytes())
+                    }else if (img.type == ImageType.JPEG || img.type == ImageType.PNG){
+                        val bitmap = BitmapFactory.decodeStream(input)
+                        img.setBitmap(bitmap)
+                    }
                     input.close()
-                    return bitmap
+                    return img
                 }else{
                     return null
                 }
             }catch (e:Exception){
                 if (e.localizedMessage != null){
-                    Log.e(Constants.TAG_ERROR,"读取缓存图片失败"+e.localizedMessage)
+                    L.e("读取缓存图片失败"+e.localizedMessage)
                 }else{
-                    Log.e(Constants.TAG_ERROR,"读取缓存图片失败")
+                    L.e("读取缓存图片失败")
                 }
                 return null
             }

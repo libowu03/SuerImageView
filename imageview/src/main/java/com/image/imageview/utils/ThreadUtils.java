@@ -24,7 +24,7 @@ public class ThreadUtils {
             }
         }catch (Exception e){
             if (e.getLocalizedMessage() != null){
-                Log.e(Constants.TAG_ERROR,e.getLocalizedMessage());
+                L.e(e.getLocalizedMessage());
             }
         }
 
@@ -37,7 +37,7 @@ public class ThreadUtils {
             }
         }catch (Exception e){
             if (e.getLocalizedMessage() != null){
-                Log.e(Constants.TAG_ERROR,e.getLocalizedMessage());
+                L.e(e.getLocalizedMessage());
             }
         }
     }

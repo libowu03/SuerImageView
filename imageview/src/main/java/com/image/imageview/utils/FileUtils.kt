@@ -3,6 +3,7 @@ package com.image.imageview.utils
 import android.util.Log
 import com.image.imageview.Constants
 import com.image.imageview.enum.ImageType
+import com.image.imageview.model.Image
 import java.io.BufferedInputStream
 import java.io.InputStream
 
@@ -41,6 +42,23 @@ object FileUtils {
             }
             else -> {
                 ImageType.UNKNOW
+            }
+        }
+    }
+
+    fun checkFuleType(type:String):ImageType{
+        when(type){
+            "image/gif" -> {
+                return ImageType.GIF
+            }
+            "image/png" -> {
+                return ImageType.PNG
+            }
+            "image/jpg" -> {
+                return ImageType.JPEG
+            }
+            else -> {
+                return ImageType.UNKNOW
             }
         }
     }
